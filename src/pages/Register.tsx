@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { motion } from "framer-motion";
 import { ArrowLeft, BadgeCheck, Loader2, Lock, ShieldCheck } from "lucide-react";
-import { trpc } from "@/providers/trpc";
+import { useMutation } from "@tanstack/react-query";
+import { callApi } from "@/lib/api";
 import { Logo } from "@/components/Logo";
 import {
   CONTACT_OPTIONS,
@@ -67,7 +68,8 @@ export default function Register() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [serverError, setServerError] = useState<string | null>(null);
 
-  const submit = trpc.registration.submit.useMutation({
+  const submit = useMutation({
+    mutationFn: (values: RegistrationInput) => callApi("submit", values),
     onSuccess: () => navigate("/success"),
     onError: (e) =>
       setServerError(

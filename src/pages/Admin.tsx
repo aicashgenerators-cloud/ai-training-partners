@@ -3,18 +3,34 @@ import { Link } from "react-router";
 import {
   ChevronDown,
   Download,
+  ExternalLink,
   Loader2,
   LogOut,
   RefreshCw,
   Search,
   Trash2,
 } from "lucide-react";
-import { trpc } from "@/providers/trpc";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Logo } from "@/components/Logo";
-import { API_URL, adminToken } from "@/lib/api";
+import { ApiError, adminToken, callApi } from "@/lib/api";
 import { REGISTRATION_STATUSES } from "@contracts/types";
 
 type Status = (typeof REGISTRATION_STATUSES)[number];
+
+type Row = {
+  id: number;
+  submittedAt: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  country: string;
+  interest: string;
+  preferredContact: string;
+  message: string;
+  status: Status;
+  assignedHandler: string;
+  notes: string;
+};
 
 const STATUS_LABEL: Record<Status, string> = {
   new: "New",
@@ -58,7 +74,8 @@ function fmtDate(d: Date | string) {
 
 function Login({ onAuthed }: { onAuthed: () => void }) {
   const [password, setPassword] = useState("");
-  const login = trpc.admin.login.useMutation({
+  const login = useMutation({
+    mutationFn: (pw: string) => callApi<{ token: string }>("login", { password: pw }),
     onSuccess: ({ token }) => {
       adminToken.set(token);
       onAuthed();
@@ -70,7 +87,7 @@ function Login({ onAuthed }: { onAuthed: () => void }) {
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          login.mutate({ password });
+          login.mutate(password);
         }}
         className="w-full max-w-sm rounded-[28px] border border-black/8 bg-white p-8 shadow-float"
       >
@@ -112,28 +129,41 @@ function Login({ onAuthed }: { onAuthed: () => void }) {
 /* ───────────────────────── dashboard ───────────────────────── */
 
 function Dashboard({ onLogout }: { onLogout: () => void }) {
-  const utils = trpc.useUtils();
-  const list = trpc.admin.list.useQuery(undefined, { retry: false });
+  const queryClient = useQueryClient();
+  const refresh = () => queryClient.invalidateQueries({ queryKey: ["admin-list"] });
+  const list = useQuery({
+    queryKey: ["admin-list"],
+    queryFn: () =>
+      callApi<{ rows: Row[]; sheetUrl: string }>("list", {}, { auth: true }),
+  });
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Status | "all">("all");
   const [open, setOpen] = useState<number | null>(null);
   const [drafts, setDrafts] = useState<Record<number, { handler: string; notes: string }>>({});
-  const [exporting, setExporting] = useState(false);
-  const [exportError, setExportError] = useState<string | null>(null);
 
   // Expired / invalid token → back to login.
   useEffect(() => {
-    if (list.error?.data?.code === "UNAUTHORIZED") onLogout();
+    if (list.error instanceof ApiError && list.error.code === "UNAUTHORIZED") onLogout();
   }, [list.error, onLogout]);
 
-  const update = trpc.admin.update.useMutation({
-    onSuccess: () => utils.admin.list.invalidate(),
+  const update = useMutation({
+    mutationFn: (v: {
+      id: number;
+      status?: Status;
+      assignedHandler?: string;
+      notes?: string;
+    }) => callApi("update", v, { auth: true }),
+    onSuccess: refresh,
+    onError: (e) => {
+      if (e instanceof ApiError && e.code === "UNAUTHORIZED") onLogout();
+    },
   });
-  const remove = trpc.admin.remove.useMutation({
-    onSuccess: () => utils.admin.list.invalidate(),
+  const remove = useMutation({
+    mutationFn: (v: { id: number }) => callApi("remove", v, { auth: true }),
+    onSuccess: refresh,
   });
 
-  const rows = list.data ?? [];
+  const rows = useMemo(() => list.data?.rows ?? [], [list.data]);
 
   const stats = useMemo(() => {
     const day = Date.now() - 24 * 60 * 60 * 1000;
@@ -160,27 +190,31 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
   const draftFor = (id: number, handler: string, notes: string) =>
     drafts[id] ?? { handler, notes };
 
-  async function downloadExcel() {
-    setExporting(true);
-    setExportError(null);
-    try {
-      const res = await fetch(`${API_URL}/api/admin/export.xlsx`, {
-        headers: { Authorization: `Bearer ${adminToken.get() ?? ""}` },
-      });
-      if (res.status === 401) return onLogout();
-      if (!res.ok) throw new Error("Download failed");
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `registrations-${new Date().toISOString().slice(0, 10)}.xlsx`;
-      a.click();
-      URL.revokeObjectURL(url);
-    } catch (e) {
-      setExportError(e instanceof Error ? e.message : "Download failed");
-    } finally {
-      setExporting(false);
-    }
+  function downloadCsv() {
+    const esc = (v: string) => {
+      // stop spreadsheet apps from running cells that start like formulas
+      const safe = /^[=@]|^[+-](?![\d\s()-]+$)/.test(v) ? `'${v}` : v;
+      return `"${safe.replace(/"/g, '""')}"`;
+    };
+    const head = [
+      "ID", "Submitted At", "Full Name", "Email", "Phone / WhatsApp", "Country",
+      "Interest", "Preferred Contact", "Message", "Status", "Assigned Handler", "Notes",
+    ];
+    const lines = rows.map((r) =>
+      [
+        String(r.id), r.submittedAt, r.fullName, r.email, r.phone, r.country,
+        r.interest, r.preferredContact, r.message, r.status, r.assignedHandler, r.notes,
+      ]
+        .map(esc)
+        .join(","),
+    );
+    const csv = "\uFEFF" + [head.map(esc).join(","), ...lines].join("\r\n");
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `registrations-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
   }
 
   return (
@@ -194,13 +228,22 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
             </span>
           </div>
           <div className="flex items-center gap-2">
+            {list.data?.sheetUrl && (
+              <a
+                href={list.data.sheetUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-2 rounded-full bg-ink px-4 py-2 text-sm font-medium text-white transition-all hover:-translate-y-0.5"
+              >
+                <ExternalLink size={15} /> Open Google Sheet
+              </a>
+            )}
             <button
-              onClick={downloadExcel}
-              disabled={exporting}
-              className="flex items-center gap-2 rounded-full bg-ink px-4 py-2 text-sm font-medium text-white transition-all hover:-translate-y-0.5 disabled:opacity-60"
+              onClick={downloadCsv}
+              disabled={rows.length === 0}
+              className="flex items-center gap-2 rounded-full border border-black/10 px-4 py-2 text-sm text-ink/70 hover:text-ink disabled:opacity-40"
             >
-              {exporting ? <Loader2 size={15} className="animate-spin" /> : <Download size={15} />}
-              Download Excel
+              <Download size={15} /> CSV
             </button>
             <button
               onClick={onLogout}
@@ -258,7 +301,6 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
             <RefreshCw size={15} className={list.isFetching ? "animate-spin" : ""} /> Refresh
           </button>
         </div>
-        {exportError && <p className="mt-3 text-sm text-red-600">{exportError}</p>}
 
         {/* table */}
         <div className="mt-4 overflow-x-auto rounded-2xl border border-black/8 bg-white">
@@ -416,8 +458,8 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
           )}
         </div>
         <p className="mt-3 text-xs text-ink/40">
-          Showing {visible.length} of {rows.length}. Changes here are written straight to the
-          Excel file on the server.
+          Showing {visible.length} of {rows.length}. Changes here are written straight to your
+          Google Sheet.
         </p>
       </main>
     </div>
