@@ -16,6 +16,6 @@ coverage/
 .env.local
 .env.*.local
 
-# NEVER commit registrant data (names, emails, phone numbers)
-data/
+# Never commit registrant data exports
 *.xlsx
+*.csv
