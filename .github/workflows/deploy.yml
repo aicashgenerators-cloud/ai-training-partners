@@ -2,7 +2,7 @@ name: Deploy site to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches: [main, master]
   workflow_dispatch:
 
 permissions:
@@ -19,13 +19,94 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      # Step 1: prove every file arrived exactly as expected (names are case-sensitive here).
+      - name: Verify project files
+        run: |
+          missing=0
+          while read -r f; do
+            [ -z "$f" ] && continue
+            if [ ! -f "$f" ]; then
+              echo "::error::MISSING: $f"
+              base=$(basename "$f")
+              echo "   similar files found in the repo (check spelling, capitals, extension):"
+              find . -path ./node_modules -prune -o -iname "${base%.*}*" -print | head -5
+              missing=$((missing+1))
+            fi
+          done <<'LIST'
+          api/adminRouter.ts
+          api/boot.ts
+          api/context.ts
+          api/lib/auth.ts
+          api/lib/env.ts
+          api/lib/excelStore.ts
+          api/lib/http.ts
+          api/lib/vite.ts
+          api/middleware.ts
+          api/registrationRouter.ts
+          api/router.ts
+          components.json
+          contracts/errors.ts
+          contracts/registration.ts
+          contracts/types.ts
+          eslint.config.js
+          index.html
+          package.json
+          postcss.config.js
+          src/App.css
+          src/App.tsx
+          src/components/ActivityToast.tsx
+          src/components/Logo.tsx
+          src/hooks/use-mobile.ts
+          src/index.css
+          src/lib/api.ts
+          src/lib/motion.tsx
+          src/lib/utils.ts
+          src/main.tsx
+          src/pages/Admin.tsx
+          src/pages/Home.tsx
+          src/pages/Register.tsx
+          src/pages/Success.tsx
+          src/providers/trpc.tsx
+          src/sections/AccountControl.tsx
+          src/sections/Earnings.tsx
+          src/sections/FAQ.tsx
+          src/sections/FinalCTA.tsx
+          src/sections/Footer.tsx
+          src/sections/HandlerSection.tsx
+          src/sections/Hero.tsx
+          src/sections/HowItWorks.tsx
+          src/sections/Navbar.tsx
+          src/sections/PrivacySection.tsx
+          src/sections/Testimonials.tsx
+          src/sections/TrustStrip.tsx
+          src/sections/WhyAITraining.tsx
+          tailwind.config.js
+          tsconfig.app.json
+          tsconfig.json
+          tsconfig.node.json
+          tsconfig.server.json
+          vite.config.ts
+          vitest.config.ts
+          LIST
+          ui=$(ls src/components/ui 2>/dev/null | wc -l)
+          echo "src/components/ui has $ui files (expected 53)"
+          [ "$ui" -ge 53 ] || { echo "::error::src/components/ui is incomplete ($ui of 53)"; missing=$((missing+1)); }
+          echo "---- src/sections as seen by the build ----"; ls -la src/sections || true
+          if [ "$missing" -gt 0 ]; then echo "::error::$missing problem(s) found above. Fix those files, then push again."; exit 1; fi
+          echo "All expected files are present."
+
       - uses: actions/setup-node@v4
         with:
-         node-version: 20
-      - run: npm install
-      - name: Build
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Build site
         env:
-          # Your hosted backend, e.g. https://taskpilot-api.onrender.com  (repo Settings → Variables → Actions)
+          # Your hosted backend, e.g. https://taskpilot-api.onrender.com
+          # (repo Settings -> Secrets and variables -> Actions -> Variables)
           VITE_API_URL: ${{ vars.VITE_API_URL }}
         run: |
           REPO="${{ github.event.repository.name }}"
@@ -34,11 +115,13 @@ jobs:
           else
             export VITE_BASE="/$REPO/"
           fi
+          echo "Building with base path: $VITE_BASE"
           npm run build
-          # Single-page-app fallback so /register, /success and /admin work on refresh
+          # Lets /register, /success and /admin work when the page is refreshed
           cp dist/public/index.html dist/public/404.html
           touch dist/public/.nojekyll
           if [ -n "${{ vars.CUSTOM_DOMAIN }}" ]; then echo "${{ vars.CUSTOM_DOMAIN }}" > dist/public/CNAME; fi
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist/public
