@@ -1,0 +1,22 @@
+# Render Blueprint: backend API with a persistent disk for registrations.xlsx
+# (Persistent disks require a paid Render instance. Any host that gives you a
+# persistent volume works the same way: Fly.io, Railway, a VPS, etc.)
+services:
+  - type: web
+    name: taskpilot-api
+    runtime: docker
+    plan: starter
+    healthCheckPath: /api/health
+    disk:
+      name: registrations
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: DATA_DIR
+        value: /data
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: ADMIN_TOKEN_SECRET
+        generateValue: true
+      - key: ALLOWED_ORIGINS
+        sync: false   # e.g. https://YOURNAME.github.io
