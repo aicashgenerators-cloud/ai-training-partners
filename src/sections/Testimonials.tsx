@@ -1,11 +1,14 @@
 import { Quote, Sparkles, Users } from "lucide-react";
-import { trpc } from "@/providers/trpc";
+import { useQuery } from "@tanstack/react-query";
+import { callApi, type Activity } from "@/lib/api";
 import { Eyebrow, Reveal } from "@/lib/motion";
 
 export function Testimonials() {
-  const { data } = trpc.registration.activity.useQuery(undefined, {
-    refetchInterval: 60_000,
-    staleTime: 30_000,
+  const { data } = useQuery({
+    queryKey: ["activity"],
+    queryFn: () => callApi<Activity>("activity"),
+    refetchInterval: 120_000,
+    staleTime: 60_000,
   });
 
   const total = data?.total ?? 0;
