@@ -105,6 +105,7 @@ jobs:
           echo "Building with base path: $VITE_BASE"
           if [ -z "$VITE_SHEETS_URL" ]; then echo "::warning::VITE_SHEETS_URL is not set, so the registration form will not save yet."; fi
           npm run build
+          ls -R dist/public | head -40
           # Lets /register, /success and /admin work when the page is refreshed
           cp dist/public/index.html dist/public/404.html
           touch dist/public/.nojekyll
