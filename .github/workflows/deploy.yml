@@ -34,17 +34,6 @@ jobs:
               missing=$((missing+1))
             fi
           done <<'LIST'
-          api/adminRouter.ts
-          api/boot.ts
-          api/context.ts
-          api/lib/auth.ts
-          api/lib/env.ts
-          api/lib/excelStore.ts
-          api/lib/http.ts
-          api/lib/vite.ts
-          api/middleware.ts
-          api/registrationRouter.ts
-          api/router.ts
           components.json
           contracts/errors.ts
           contracts/registration.ts
@@ -67,7 +56,7 @@ jobs:
           src/pages/Home.tsx
           src/pages/Register.tsx
           src/pages/Success.tsx
-          src/providers/trpc.tsx
+          src/providers/query.tsx
           src/sections/AccountControl.tsx
           src/sections/Earnings.tsx
           src/sections/FAQ.tsx
@@ -85,14 +74,13 @@ jobs:
           tsconfig.app.json
           tsconfig.json
           tsconfig.node.json
-          tsconfig.server.json
           vite.config.ts
-          vitest.config.ts
           LIST
           ui=$(ls src/components/ui 2>/dev/null | wc -l)
           echo "src/components/ui has $ui files (expected 53)"
           [ "$ui" -ge 53 ] || { echo "::error::src/components/ui is incomplete ($ui of 53)"; missing=$((missing+1)); }
           echo "---- src/sections as seen by the build ----"; ls -la src/sections || true
+          if [ -d api ]; then echo "::warning::An old 'api' folder is still in the repo. It is no longer used and can be deleted."; fi
           if [ "$missing" -gt 0 ]; then echo "::error::$missing problem(s) found above. Fix those files, then push again."; exit 1; fi
           echo "All expected files are present."
 
@@ -105,9 +93,8 @@ jobs:
 
       - name: Build site
         env:
-          # Your hosted backend, e.g. https://taskpilot-api.onrender.com
-          # (repo Settings -> Secrets and variables -> Actions -> Variables)
-          VITE_API_URL: ${{ vars.VITE_API_URL }}
+          # The Google Apps Script Web app URL (repo Settings -> Secrets and variables -> Actions -> Variables)
+          VITE_SHEETS_URL: ${{ vars.VITE_SHEETS_URL }}
         run: |
           REPO="${{ github.event.repository.name }}"
           if [ -n "${{ vars.CUSTOM_DOMAIN }}" ] || [[ "$REPO" == *.github.io ]]; then
@@ -116,6 +103,7 @@ jobs:
             export VITE_BASE="/$REPO/"
           fi
           echo "Building with base path: $VITE_BASE"
+          if [ -z "$VITE_SHEETS_URL" ]; then echo "::warning::VITE_SHEETS_URL is not set, so the registration form will not save yet."; fi
           npm run build
           # Lets /register, /success and /admin work when the page is refreshed
           cp dist/public/index.html dist/public/404.html
