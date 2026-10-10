@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check } from "lucide-react";
-import { trpc } from "@/providers/trpc";
+import { useQuery } from "@tanstack/react-query";
+import { callApi, type Activity } from "@/lib/api";
 
 function timeAgo(date: Date): string {
   const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
@@ -26,8 +27,11 @@ export function ActivityToast() {
   const seenRef = useRef<string | null>(null);
   const lastShownRef = useRef(0);
 
-  const { data } = trpc.registration.activity.useQuery(undefined, {
-    refetchInterval: 30_000,
+  const { data } = useQuery({
+    queryKey: ["activity"],
+    queryFn: () => callApi<Activity>("activity"),
+    refetchInterval: 120_000,
+    staleTime: 60_000,
   });
 
   useEffect(() => {
