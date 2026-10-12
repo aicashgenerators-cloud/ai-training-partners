@@ -1,15 +1,25 @@
-import { Quote, Sparkles, Users } from "lucide-react";
+import { Sparkles, Users } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { callApi, type Activity } from "@/lib/api";
 import { Eyebrow, Reveal } from "@/lib/motion";
+import { useI18n } from "@/lib/i18n";
 
+/**
+ * Real registration counters. Hidden by default; switch on in Admin → Content → "Show community counters".
+ * No testimonials are shown until genuine, verified ones exist.
+ */
 export function Testimonials() {
+  const { t, settings } = useI18n();
+
   const { data } = useQuery({
     queryKey: ["activity"],
     queryFn: () => callApi<Activity>("activity"),
     refetchInterval: 120_000,
     staleTime: 60_000,
+    enabled: settings.showCommunity,
   });
+
+  if (!settings.showCommunity) return null;
 
   const total = data?.total ?? 0;
 
@@ -17,19 +27,16 @@ export function Testimonials() {
     <section id="testimonials" className="scroll-mt-24 px-5 py-20 sm:px-8 sm:py-28">
       <div className="mx-auto max-w-6xl">
         <Reveal className="text-center">
-          <Eyebrow>Community</Eyebrow>
+          <Eyebrow>{t("com.eyebrow")}</Eyebrow>
           <h2 className="mx-auto mt-4 max-w-2xl font-serif-display text-4xl leading-[1.08] text-ink sm:text-5xl">
-            Early Participants Are{" "}
-            <em className="text-forest-deep">Joining Our Program</em>
+            {t("com.title")} <em className="text-forest-deep">{t("com.titleEm")}</em>
           </h2>
           <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-ink/60">
-            We're growing with real people, one guided onboarding at a time. As
-            participants share their experiences, their stories will appear
-            here — genuine words from verified participants only.
+            {t("com.body")}
           </p>
         </Reveal>
 
-        <div className="mx-auto mt-14 grid max-w-4xl gap-5 sm:grid-cols-3">
+        <div className="mx-auto mt-14 grid max-w-3xl gap-5 sm:grid-cols-2">
           <Reveal>
             <div className="flex h-full flex-col items-center rounded-3xl border border-black/5 bg-white p-8 text-center shadow-card">
               <span className="grid h-11 w-11 place-items-center rounded-full bg-forest-soft text-forest-deep">
@@ -38,9 +45,7 @@ export function Testimonials() {
               <p className="mt-5 font-serif-display text-4xl text-ink">
                 {total > 0 ? total.toLocaleString() : "—"}
               </p>
-              <p className="mt-2 text-sm leading-relaxed text-ink/55">
-                Registrations received through this website
-              </p>
+              <p className="mt-2 text-sm leading-relaxed text-ink/55">{t("com.statTotal")}</p>
             </div>
           </Reveal>
 
@@ -49,27 +54,8 @@ export function Testimonials() {
               <span className="grid h-11 w-11 place-items-center rounded-full bg-forest-soft text-forest-deep">
                 <Sparkles size={19} strokeWidth={1.8} />
               </span>
-              <p className="mt-5 font-serif-display text-4xl text-ink">
-                {data?.last24h ?? 0}
-              </p>
-              <p className="mt-2 text-sm leading-relaxed text-ink/55">
-                New participants in the last 24 hours
-              </p>
-            </div>
-          </Reveal>
-
-          <Reveal delay={2}>
-            <div className="flex h-full flex-col items-center rounded-3xl border border-dashed border-ink/15 bg-paper p-8 text-center">
-              <span className="grid h-11 w-11 place-items-center rounded-full bg-white text-ink/40 shadow-card">
-                <Quote size={18} strokeWidth={1.8} />
-              </span>
-              <p className="mt-5 text-[15px] font-medium leading-relaxed text-ink/60">
-                Your story could be here
-              </p>
-              <p className="mt-2 text-sm leading-relaxed text-ink/45">
-                Genuine testimonials from verified participants — coming as our
-                community grows.
-              </p>
+              <p className="mt-5 font-serif-display text-4xl text-ink">{data?.last24h ?? 0}</p>
+              <p className="mt-2 text-sm leading-relaxed text-ink/55">{t("com.stat24h")}</p>
             </div>
           </Reveal>
         </div>

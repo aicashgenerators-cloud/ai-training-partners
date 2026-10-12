@@ -2,15 +2,19 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { Menu, X } from "lucide-react";
 import { Logo } from "@/components/Logo";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useT } from "@/lib/i18n";
+import type { Key } from "@/content";
 
-const LINKS = [
-  { label: "How It Works", href: `${import.meta.env.BASE_URL}#how-it-works` },
-  { label: "Why Us", href: `${import.meta.env.BASE_URL}#why-us` },
-  { label: "FAQ", href: `${import.meta.env.BASE_URL}#faq` },
-  { label: "Testimonials", href: `${import.meta.env.BASE_URL}#testimonials` },
+const LINKS: { key: Key; href: string }[] = [
+  { key: "nav.how", href: "#how-it-works" },
+  { key: "nav.earnings", href: "#earnings" },
+  { key: "nav.why", href: "#why-us" },
+  { key: "nav.faq", href: "#faq" },
 ];
 
 export function Navbar() {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -35,26 +39,27 @@ export function Navbar() {
         <div className="hidden items-center gap-8 md:flex">
           {LINKS.map((l) => (
             <a
-              key={l.label}
+              key={l.key}
               href={l.href}
               className="text-sm text-ink/70 transition-colors hover:text-ink"
             >
-              {l.label}
+              {t(l.key)}
             </a>
           ))}
         </div>
 
         <div className="flex items-center gap-3">
+          <LanguageSwitcher goToVersion />
           <Link
             to="/register"
             className="hidden rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-white transition-all hover:-translate-y-px hover:shadow-lift sm:inline-block"
           >
-            Get Started
+            {t("nav.cta")}
           </Link>
           <button
             className="grid h-10 w-10 place-items-center rounded-full border border-black/10 md:hidden"
             onClick={() => setOpen(!open)}
-            aria-label="Toggle menu"
+            aria-label={t("nav.menu")}
           >
             {open ? <X size={20} /> : <Menu size={20} />}
           </button>
@@ -66,12 +71,12 @@ export function Navbar() {
           <div className="flex flex-col gap-1">
             {LINKS.map((l) => (
               <a
-                key={l.label}
+                key={l.key}
                 href={l.href}
                 onClick={() => setOpen(false)}
                 className="rounded-xl px-3 py-3 text-[15px] text-ink/80 hover:bg-black/5"
               >
-                {l.label}
+                {t(l.key)}
               </a>
             ))}
             <Link
@@ -79,7 +84,7 @@ export function Navbar() {
               onClick={() => setOpen(false)}
               className="mt-3 rounded-full bg-ink px-5 py-3 text-center text-sm font-medium text-white"
             >
-              Get Started
+              {t("nav.cta")}
             </Link>
           </div>
         </div>

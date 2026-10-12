@@ -1,7 +1,8 @@
 import { Link } from "react-router";
 import { motion } from "framer-motion";
-import { ArrowDown, BadgeCheck, Check, Circle, Lock } from "lucide-react";
+import { ArrowDown, BadgeCheck, Check, Circle, Lock, Wallet } from "lucide-react";
 import { Eyebrow } from "@/lib/motion";
+import { useT } from "@/lib/i18n";
 
 const easeOut = [0.22, 1, 0.36, 1] as const;
 
@@ -14,14 +15,15 @@ const heroItem = {
   }),
 };
 
-const JOURNEY_STEPS = [
-  { label: "Registration", done: true },
-  { label: "Handler Connected", done: true },
-  { label: "Account Setup", done: false },
-  { label: "Training", done: false },
-];
-
 function DashboardCard() {
+  const t = useT();
+  const steps = [
+    { label: t("mock.step1"), done: true },
+    { label: t("mock.step2"), done: true },
+    { label: t("mock.step3"), done: false },
+    { label: t("mock.step4"), done: false },
+  ];
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 48 }}
@@ -38,7 +40,7 @@ function DashboardCard() {
             <span className="h-2.5 w-2.5 rounded-full bg-forest/60" />
           </div>
           <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-ink/40">
-            TaskPilot Dashboard
+            {t("mock.title")}
           </p>
         </div>
 
@@ -46,10 +48,10 @@ function DashboardCard() {
           {/* journey checklist */}
           <div>
             <h3 className="font-serif-display text-2xl text-ink sm:text-[28px]">
-              Your AI Journey
+              {t("mock.journey")}
             </h3>
             <ul className="mt-5 space-y-3.5">
-              {JOURNEY_STEPS.map((s, i) => (
+              {steps.map((s, i) => (
                 <motion.li
                   key={s.label}
                   initial={{ opacity: 0, x: -12 }}
@@ -78,8 +80,8 @@ function DashboardCard() {
             {/* progress bar */}
             <div className="mt-7">
               <div className="flex items-center justify-between text-xs text-ink/50">
-                <span>Onboarding progress</span>
-                <span className="font-medium text-ink">Step 2 of 4</span>
+                <span>{t("mock.progress")}</span>
+                <span className="font-medium text-ink">{t("mock.stepOf")}</span>
               </div>
               <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-line">
                 <motion.div
@@ -95,20 +97,20 @@ function DashboardCard() {
           {/* handler panel */}
           <div className="rounded-2xl border border-black/5 bg-paper p-5 sm:p-6">
             <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-ink/40">
-              Your dedicated handler
+              {t("mock.handlerLabel")}
             </p>
             <div className="mt-4 flex items-center gap-3">
               <div className="relative">
                 <div className="grid h-11 w-11 place-items-center rounded-full bg-gradient-to-br from-forest to-forest-deep text-sm font-semibold text-white">
-                  AM
+                  {t("mock.initials")}
                 </div>
                 <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-paper bg-forest" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-ink">Ade M.</p>
+                <p className="text-sm font-semibold text-ink">{t("mock.handlerName")}</p>
                 <p className="flex items-center gap-1 text-xs text-forest-deep">
                   <BadgeCheck size={13} />
-                  Verified Handler
+                  {t("mock.verified")}
                 </p>
               </div>
             </div>
@@ -118,7 +120,7 @@ function DashboardCard() {
               transition={{ delay: 1.7, duration: 0.5 }}
               className="mt-4 rounded-2xl rounded-tl-md bg-white px-4 py-3 text-sm leading-relaxed text-ink/80 shadow-card"
             >
-              “I’m here if you have any questions about the next steps.”
+              {t("mock.bubble")}
             </motion.div>
             <div className="mt-3 flex items-center gap-1.5 pl-1">
               <span className="typing-dot h-1.5 w-1.5 rounded-full bg-ink/40" />
@@ -140,8 +142,8 @@ function DashboardCard() {
           <BadgeCheck size={16} />
         </span>
         <div>
-          <p className="text-xs font-semibold text-ink">Handler Verified</p>
-          <p className="text-[11px] text-ink/50">Vetted by our team</p>
+          <p className="text-xs font-semibold text-ink">{t("mock.b1Title")}</p>
+          <p className="text-[11px] text-ink/50">{t("mock.b1Sub")}</p>
         </div>
       </motion.div>
 
@@ -156,8 +158,8 @@ function DashboardCard() {
           <Lock size={14} />
         </span>
         <div>
-          <p className="text-xs font-semibold text-ink">Your Account</p>
-          <p className="text-[11px] text-ink/50">Always under your control</p>
+          <p className="text-xs font-semibold text-ink">{t("mock.b2Title")}</p>
+          <p className="text-[11px] text-ink/50">{t("mock.b2Sub")}</p>
         </div>
       </motion.div>
     </motion.div>
@@ -165,6 +167,7 @@ function DashboardCard() {
 }
 
 export function Hero() {
+  const t = useT();
   return (
     <section className="relative overflow-hidden px-5 pt-32 sm:px-8 sm:pt-40">
       {/* soft ambient gradient */}
@@ -179,7 +182,7 @@ export function Hero() {
 
       <div className="relative mx-auto max-w-6xl text-center">
         <motion.div variants={heroItem} custom={0} initial="hidden" animate="visible">
-          <Eyebrow>AI Training Opportunities</Eyebrow>
+          <Eyebrow>{t("hero.eyebrow")}</Eyebrow>
         </motion.div>
 
         <motion.h1
@@ -189,8 +192,8 @@ export function Hero() {
           animate="visible"
           className="mx-auto mt-6 max-w-4xl font-serif-display text-[44px] leading-[1.04] text-ink sm:text-6xl lg:text-[76px]"
         >
-          Start Your AI Training Journey With{" "}
-          <em className="text-forest-deep">Expert Guidance</em>
+          {t("hero.titleLead")}{" "}
+          <em className="text-forest-deep">{t("hero.titleEm")}</em>
         </motion.h1>
 
         <motion.p
@@ -198,16 +201,40 @@ export function Hero() {
           custom={2}
           initial="hidden"
           animate="visible"
-          className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-ink/60 sm:text-lg"
+          className="mx-auto mt-6 max-w-2xl font-serif-display text-2xl leading-snug text-ink/80 sm:text-[28px]"
         >
-          Getting started with AI training can feel complicated. We connect you
-          with a verified handler who guides you through the process, answers
-          your questions, and helps make your onboarding simple.
+          {t("hero.question")}
+        </motion.p>
+
+        <motion.p
+          variants={heroItem}
+          custom={3}
+          initial="hidden"
+          animate="visible"
+          className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-ink/60 sm:text-lg"
+        >
+          {t("hero.body")}
         </motion.p>
 
         <motion.div
           variants={heroItem}
           custom={3}
+          initial="hidden"
+          animate="visible"
+          className="mx-auto mt-7 flex max-w-xl flex-col items-center gap-2"
+        >
+          <p className="inline-flex items-center gap-2.5 rounded-full border border-forest/25 bg-forest-soft/70 px-5 py-2.5 text-[15px] font-semibold text-forest-deep sm:text-base">
+            <Wallet size={17} strokeWidth={1.9} />
+            {t("hero.payout")}
+          </p>
+          <p className="text-xs leading-relaxed text-ink/45 sm:text-[13px]">
+            {t("hero.disclosure")}
+          </p>
+        </motion.div>
+
+        <motion.div
+          variants={heroItem}
+          custom={4}
           initial="hidden"
           animate="visible"
           className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row"
@@ -216,27 +243,26 @@ export function Hero() {
             to="/register"
             className="w-full rounded-full bg-ink px-8 py-4 text-[15px] font-medium text-white transition-all hover:-translate-y-0.5 hover:shadow-lift sm:w-auto"
           >
-            Get Started
+            {t("hero.ctaPrimary")}
           </Link>
           <a
             href="#how-it-works"
             className="flex w-full items-center justify-center gap-2 rounded-full border border-ink/15 px-8 py-4 text-[15px] font-medium text-ink transition-colors hover:border-ink/30 sm:w-auto"
           >
-            How It Works
+            {t("hero.ctaSecondary")}
             <ArrowDown size={16} />
           </a>
         </motion.div>
 
         <motion.p
           variants={heroItem}
-          custom={4}
+          custom={5}
           initial="hidden"
           animate="visible"
           className="mx-auto mt-7 flex max-w-md items-start justify-center gap-2 text-xs leading-relaxed text-ink/45 sm:text-[13px]"
         >
           <Lock size={13} className="mt-0.5 shrink-0" />
-          Your information is used to connect you with your assigned handler.
-          You remain in control of your account.
+          {t("hero.trust")}
         </motion.p>
 
         <DashboardCard />

@@ -1,41 +1,30 @@
 import { Link } from "react-router";
 import { Eyebrow, Reveal } from "@/lib/motion";
+import { useT } from "@/lib/i18n";
+import type { Key } from "@/content";
 
 const STEPS = [
-  {
-    n: "01",
-    title: "Register",
-    body: "Tell us how to contact you and submit your request to get started.",
-  },
-  {
-    n: "02",
-    title: "Get Connected",
-    body: "You'll be connected directly with a dedicated handler who can answer your questions.",
-  },
-  {
-    n: "03",
-    title: "Get Guided",
-    body: "Your handler walks you through the process and helps make each step clear.",
-  },
-  {
-    n: "04",
-    title: "Begin Your Journey",
-    body: "Once you've completed the required onboarding steps, you can begin your AI training journey.",
-  },
-];
+  { n: "01", title: "how.s1.title", body: "how.s1.body" },
+  { n: "02", title: "how.s2.title", body: "how.s2.body" },
+  { n: "03", title: "how.s3.title", body: "how.s3.body" },
+  { n: "04", title: "how.s4.title", body: "how.s4.body" },
+  { n: "05", title: "how.s5.title", body: "how.s5.body" },
+] as const satisfies readonly { n: string; title: Key; body: Key }[];
 
 export function HowItWorks() {
+  const t = useT();
+
   return (
     <section id="how-it-works" className="scroll-mt-24 px-5 py-20 sm:px-8 sm:py-28">
       <div className="mx-auto max-w-6xl">
         <Reveal className="text-center">
-          <Eyebrow>The process</Eyebrow>
+          <Eyebrow>{t("how.eyebrow")}</Eyebrow>
           <h2 className="mx-auto mt-4 max-w-2xl font-serif-display text-4xl leading-[1.08] text-ink sm:text-5xl">
-            Getting Started Is <em className="text-forest-deep">Simple</em>
+            {t("how.title")} <em className="text-forest-deep">{t("how.titleEm")}</em>
           </h2>
         </Reveal>
 
-        <div className="relative mt-16 grid gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
+        <div className="relative mt-16 grid gap-10 sm:grid-cols-2 lg:grid-cols-5 lg:gap-6">
           {/* connecting line (desktop) */}
           <div
             aria-hidden="true"
@@ -49,10 +38,10 @@ export function HowItWorks() {
                 </div>
                 <div className="lg:mt-6">
                   <h3 className="text-lg font-semibold tracking-tight text-ink">
-                    {s.title}
+                    {t(s.title)}
                   </h3>
                   <p className="mt-2 text-[15px] leading-relaxed text-ink/55">
-                    {s.body}
+                    {t(s.body)}
                   </p>
                 </div>
               </div>
@@ -65,7 +54,7 @@ export function HowItWorks() {
             to="/register"
             className="inline-block rounded-full bg-ink px-8 py-4 text-[15px] font-medium text-white transition-all hover:-translate-y-0.5 hover:shadow-lift"
           >
-            Start My Journey
+            {t("how.cta")}
           </Link>
         </Reveal>
       </div>
