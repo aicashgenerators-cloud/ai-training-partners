@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Logo } from "@/components/Logo";
+import AdminContent from "./AdminContent";
 import { ApiError, adminToken, callApi } from "@/lib/api";
 import { REGISTRATION_STATUSES } from "@contracts/types";
 
@@ -136,6 +137,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
     queryFn: () =>
       callApi<{ rows: Row[]; sheetUrl: string }>("list", {}, { auth: true }),
   });
+  const [tab, setTab] = useState<"registrations" | "content">("registrations");
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Status | "all">("all");
   const [open, setOpen] = useState<number | null>(null);
@@ -255,6 +257,34 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
         </div>
       </header>
 
+      <nav className="border-b border-black/8 bg-white">
+        <div className="mx-auto flex max-w-7xl gap-6 px-5 sm:px-8">
+          {(
+            [
+              ["registrations", "Registrations"],
+              ["content", "Website content"],
+            ] as const
+          ).map(([id, label]) => (
+            <button
+              key={id}
+              onClick={() => setTab(id)}
+              className={`-mb-px border-b-2 py-3.5 text-sm font-medium transition-colors ${
+                tab === id
+                  ? "border-ink text-ink"
+                  : "border-transparent text-ink/50 hover:text-ink"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </nav>
+
+      {tab === "content" ? (
+        <main className="mx-auto max-w-5xl px-5 py-8 sm:px-8">
+          <AdminContent onUnauthorized={onLogout} />
+        </main>
+      ) : (
       <main className="mx-auto max-w-7xl px-5 py-8 sm:px-8">
         {/* stats */}
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
@@ -462,6 +492,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
           Google Sheet.
         </p>
       </main>
+      )}
     </div>
   );
 }

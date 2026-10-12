@@ -3,7 +3,10 @@ import { Link, useNavigate } from "react-router";
 import { motion } from "framer-motion";
 import { ArrowLeft, BadgeCheck, Loader2, Lock, ShieldCheck } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
-import { callApi } from "@/lib/api";
+import { ApiError, callApi } from "@/lib/api";
+import { useI18n } from "@/lib/i18n";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import type { Key } from "@/content";
 import { Logo } from "@/components/Logo";
 import {
   CONTACT_OPTIONS,
@@ -12,14 +15,32 @@ import {
   type RegistrationInput,
 } from "@contracts/types";
 
-const COUNTRIES = [
-  "Nigeria", "Ghana", "Kenya", "South Africa", "Uganda", "Tanzania", "Rwanda",
-  "Egypt", "Morocco", "India", "Pakistan", "Bangladesh", "Philippines",
-  "Indonesia", "Vietnam", "United States", "Canada", "United Kingdom",
-  "Ireland", "Germany", "France", "Netherlands", "Spain", "Italy", "Portugal",
-  "Poland", "Brazil", "Mexico", "Colombia", "Argentina", "Chile", "Australia",
-  "New Zealand", "United Arab Emirates", "Saudi Arabia", "Turkey", "Other",
+// [ISO code, English name]. The English name is what gets saved to the sheet; the label shown is translated.
+const COUNTRIES: [string, string][] = [
+  ["NG", "Nigeria"], ["GH", "Ghana"], ["KE", "Kenya"], ["ZA", "South Africa"],
+  ["UG", "Uganda"], ["TZ", "Tanzania"], ["RW", "Rwanda"], ["EG", "Egypt"],
+  ["MA", "Morocco"], ["IN", "India"], ["PK", "Pakistan"], ["BD", "Bangladesh"],
+  ["PH", "Philippines"], ["ID", "Indonesia"], ["VN", "Vietnam"],
+  ["US", "United States"], ["CA", "Canada"], ["GB", "United Kingdom"],
+  ["IE", "Ireland"], ["DE", "Germany"], ["FR", "France"], ["NL", "Netherlands"],
+  ["ES", "Spain"], ["IT", "Italy"], ["PT", "Portugal"], ["PL", "Poland"],
+  ["BR", "Brazil"], ["MX", "Mexico"], ["CO", "Colombia"], ["AR", "Argentina"],
+  ["CL", "Chile"], ["AU", "Australia"], ["NZ", "New Zealand"],
+  ["AE", "United Arab Emirates"], ["SA", "Saudi Arabia"], ["TR", "Turkey"],
 ];
+
+function countryOptions(locale: string): { value: string; label: string }[] {
+  let names: Intl.DisplayNames | null = null;
+  try {
+    names = new Intl.DisplayNames([locale], { type: "region" });
+  } catch {
+    names = null;
+  }
+  return COUNTRIES.map(([code, english]) => ({
+    value: english,
+    label: names?.of(code) ?? english,
+  })).sort((a, b) => a.label.localeCompare(b.label, locale));
+}
 
 type FormState = {
   fullName: string;
@@ -63,7 +84,9 @@ function Field({
 }
 
 export default function Register() {
+  const { t, locale } = useI18n();
   const navigate = useNavigate();
+  const countries = countryOptions(locale);
   const [form, setForm] = useState<FormState>(INITIAL);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [serverError, setServerError] = useState<string | null>(null);
@@ -71,11 +94,16 @@ export default function Register() {
   const submit = useMutation({
     mutationFn: (values: RegistrationInput) => callApi("submit", values),
     onSuccess: () => navigate("/success"),
-    onError: (e) =>
+    onError: (e) => {
+      const code = e instanceof ApiError ? e.code : undefined;
       setServerError(
-        e.message ||
-          "Something went wrong while submitting. Please try again.",
-      ),
+        code === "TOO_MANY"
+          ? t("reg.err.tooMany")
+          : code === "NOT_CONFIGURED"
+            ? t("reg.err.notReady")
+            : t("reg.err.server"),
+      );
+    },
   });
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) => {
@@ -97,10 +125,9 @@ export default function Register() {
       const fieldErrors: Record<string, string> = {};
       for (const issue of parsed.error.issues) {
         const key = String(issue.path[0] ?? "form");
-        if (!fieldErrors[key]) fieldErrors[key] = issue.message;
+        if (!fieldErrors[key]) fieldErrors[key] = t(`reg.err.${key}` as Key) || t("reg.err.server");
       }
-      if (!form.interest)
-        fieldErrors.interest = "Please select what you're interested in";
+      if (!form.interest) fieldErrors.interest = t("reg.err.interest");
       setErrors(fieldErrors);
       return;
     }
@@ -113,13 +140,16 @@ export default function Register() {
       {/* top bar */}
       <header className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 sm:px-8">
         <Logo />
-        <Link
-          to="/"
-          className="flex items-center gap-1.5 text-sm text-ink/60 transition-colors hover:text-ink"
-        >
-          <ArrowLeft size={15} />
-          Back to home
-        </Link>
+        <div className="flex items-center gap-3">
+          <LanguageSwitcher />
+          <Link
+            to="/"
+            className="flex items-center gap-1.5 text-sm text-ink/60 transition-colors hover:text-ink"
+          >
+            <ArrowLeft size={15} />
+            {t("reg.back")}
+          </Link>
+        </div>
       </header>
 
       <main className="mx-auto grid max-w-6xl gap-14 px-5 pb-24 pt-10 sm:px-8 lg:grid-cols-[1fr_1.15fr] lg:gap-20 lg:pt-16">
@@ -130,34 +160,20 @@ export default function Register() {
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
         >
           <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-forest-deep">
-            Registration
+            {t("reg.eyebrow")}
           </p>
           <h1 className="mt-4 font-serif-display text-4xl leading-[1.08] text-ink sm:text-5xl">
-            Let's Get You <em className="text-forest-deep">Connected</em>
+            {t("reg.title")} <em className="text-forest-deep">{t("reg.titleEm")}</em>
           </h1>
           <p className="mt-5 max-w-md text-base leading-relaxed text-ink/60">
-            Tell us how to reach you. We'll connect you with a verified handler
-            who will answer your questions and guide you through the next
-            steps.
+            {t("reg.body")}
           </p>
 
           <ul className="mt-9 space-y-5">
             {[
-              {
-                icon: BadgeCheck,
-                title: "Verified handlers",
-                body: "Every handler is vetted and verified by our team.",
-              },
-              {
-                icon: Lock,
-                title: "Minimal information",
-                body: "We only ask for what's needed to connect you.",
-              },
-              {
-                icon: ShieldCheck,
-                title: "You stay in control",
-                body: "Your account remains yours — disconnect anytime.",
-              },
+              { icon: BadgeCheck, title: t("reg.p1.title"), body: t("reg.p1.body") },
+              { icon: Lock, title: t("reg.p2.title"), body: t("reg.p2.body") },
+              { icon: ShieldCheck, title: t("reg.p3.title"), body: t("reg.p3.body") },
             ].map((item) => (
               <li key={item.title} className="flex items-start gap-4">
                 <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-forest-soft text-forest-deep">
@@ -186,21 +202,21 @@ export default function Register() {
             className="rounded-[28px] border border-black/8 bg-white p-7 shadow-float sm:p-10"
           >
             <div className="space-y-6">
-              <Field label="Full Name" error={errors.fullName}>
+              <Field label={t("reg.fullName")} error={errors.fullName}>
                 <input
                   className={inputCls}
-                  placeholder="Enter your name"
+                  placeholder={t("reg.fullName.ph")}
                   value={form.fullName}
                   onChange={(e) => set("fullName", e.target.value)}
                   autoComplete="name"
                 />
               </Field>
 
-              <Field label="Email Address" error={errors.email}>
+              <Field label={t("reg.email")} error={errors.email}>
                 <input
                   type="email"
                   className={inputCls}
-                  placeholder="you@example.com"
+                  placeholder={t("reg.email.ph")}
                   value={form.email}
                   onChange={(e) => set("email", e.target.value)}
                   autoComplete="email"
@@ -208,36 +224,37 @@ export default function Register() {
               </Field>
 
               <div className="grid gap-6 sm:grid-cols-2">
-                <Field label="WhatsApp / Phone Number" error={errors.phone}>
+                <Field label={t("reg.phone")} error={errors.phone}>
                   <input
                     type="tel"
                     className={inputCls}
-                    placeholder="+234 ..."
+                    placeholder={t("reg.phone.ph")}
                     value={form.phone}
                     onChange={(e) => set("phone", e.target.value)}
                     autoComplete="tel"
                   />
                 </Field>
 
-                <Field label="Country" error={errors.country}>
+                <Field label={t("reg.country")} error={errors.country}>
                   <select
                     className={`${inputCls} ${form.country ? "" : "text-ink/35"}`}
                     value={form.country}
                     onChange={(e) => set("country", e.target.value)}
                   >
                     <option value="" disabled>
-                      Select your country
+                      {t("reg.country.ph")}
                     </option>
-                    {COUNTRIES.map((c) => (
-                      <option key={c} value={c}>
-                        {c}
+                    {countries.map((c) => (
+                      <option key={c.value} value={c.value}>
+                        {c.label}
                       </option>
                     ))}
+                    <option value="Other">{t("reg.country.other")}</option>
                   </select>
                 </Field>
               </div>
 
-              <Field label="What are you interested in?" error={errors.interest}>
+              <Field label={t("reg.interest")} error={errors.interest}>
                 <div className="grid gap-2.5 sm:grid-cols-2">
                   {INTEREST_OPTIONS.map((o) => (
                     <button
@@ -250,13 +267,13 @@ export default function Register() {
                           : "border-black/10 bg-white text-ink/65 hover:border-black/20"
                       }`}
                     >
-                      {o.label}
+                      {t(`reg.interest.${o.value}` as Key)}
                     </button>
                   ))}
                 </div>
               </Field>
 
-              <Field label="Preferred contact method">
+              <Field label={t("reg.contact")}>
                 <div className="flex gap-2.5">
                   {CONTACT_OPTIONS.map((o) => (
                     <button
@@ -269,25 +286,29 @@ export default function Register() {
                           : "border-black/10 bg-white text-ink/65 hover:border-black/20"
                       }`}
                     >
-                      {o.label}
+                      {t(`reg.contact.${o.value}` as Key)}
                     </button>
                   ))}
                 </div>
               </Field>
 
               <Field
-                label="What would you like help with? (optional)"
+                label={t("reg.message")}
                 error={errors.message}
               >
                 <textarea
                   rows={3}
                   className={`${inputCls} resize-none`}
-                  placeholder="Tell us anything that would help your handler prepare…"
+                  placeholder={t("reg.message.ph")}
                   value={form.message}
                   onChange={(e) => set("message", e.target.value)}
                 />
               </Field>
             </div>
+
+            <p className="mt-6 rounded-2xl border border-forest/20 bg-forest-soft/50 px-4 py-3 text-[13px] leading-relaxed text-ink/70">
+              {t("reg.notice")}
+            </p>
 
             {serverError && (
               <p className="mt-5 rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -301,13 +322,12 @@ export default function Register() {
               className="mt-8 flex w-full items-center justify-center gap-2 rounded-full bg-ink py-4 text-[15px] font-medium text-white transition-all hover:-translate-y-0.5 hover:shadow-lift disabled:translate-y-0 disabled:opacity-60"
             >
               {submit.isPending && <Loader2 size={17} className="animate-spin" />}
-              {submit.isPending ? "Connecting…" : "Connect Me With A Handler"}
+              {submit.isPending ? t("reg.sending") : t("reg.button")}
             </button>
 
             <p className="mt-4 flex items-start justify-center gap-1.5 text-center text-xs leading-relaxed text-ink/45">
               <Lock size={12} className="mt-0.5 shrink-0" />
-              By submitting this form, you agree to our Privacy Policy and allow
-              us to contact you regarding your registration.
+              {t("reg.privacy")}
             </p>
           </form>
         </motion.div>
