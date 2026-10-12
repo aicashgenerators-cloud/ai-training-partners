@@ -3,16 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Check } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { callApi, type Activity } from "@/lib/api";
-
-function timeAgo(date: Date): string {
-  const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
-  if (seconds < 60) return "Just now";
-  const minutes = Math.floor(seconds / 60);
-  if (minutes === 1) return "1 minute ago";
-  if (minutes < 60) return `${minutes} minutes ago`;
-  const hours = Math.floor(minutes / 60);
-  return hours === 1 ? "1 hour ago" : `${hours} hours ago`;
-}
+import { useI18n } from "@/lib/i18n";
 
 /**
  * Floating registration notification.
@@ -20,8 +11,21 @@ function timeAgo(date: Date): string {
  * Only ever displays REAL registration activity from the database —
  * aggregate counts and timestamps only, never personal information.
  * If there are no registrations, nothing is shown.
+ * Off by default: switch it on in Admin → Content → "Registration popup".
  */
 export function ActivityToast() {
+  const { t, settings } = useI18n();
+
+  const timeAgo = (date: Date): string => {
+    const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+    if (seconds < 60) return t("toast.now");
+    const minutes = Math.floor(seconds / 60);
+    if (minutes === 1) return t("toast.min1");
+    if (minutes < 60) return t("toast.mins", { n: minutes });
+    const hours = Math.floor(minutes / 60);
+    return hours === 1 ? t("toast.hour1") : t("toast.hours", { n: hours });
+  };
+
   const [visible, setVisible] = useState(false);
   const [latest, setLatest] = useState<Date | null>(null);
   const seenRef = useRef<string | null>(null);
@@ -32,6 +36,7 @@ export function ActivityToast() {
     queryFn: () => callApi<Activity>("activity"),
     refetchInterval: 120_000,
     staleTime: 60_000,
+    enabled: settings.popupEnabled,
   });
 
   useEffect(() => {
@@ -63,13 +68,13 @@ export function ActivityToast() {
 
   useEffect(() => {
     if (!visible) return;
-    const t = setTimeout(() => setVisible(false), 7000);
-    return () => clearTimeout(t);
-  }, [visible, latest]);
+    const timer = setTimeout(() => setVisible(false), settings.popupSeconds * 1000);
+    return () => clearTimeout(timer);
+  }, [visible, latest, settings.popupSeconds]);
 
   return (
     <AnimatePresence>
-      {visible && latest && (
+      {settings.popupEnabled && visible && latest && (
         <motion.div
           initial={{ opacity: 0, y: 24, scale: 0.96 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -83,9 +88,9 @@ export function ActivityToast() {
             <Check size={16} strokeWidth={3} className="relative text-forest-deep" />
           </span>
           <div>
-            <p className="text-sm font-semibold text-ink">Someone just registered</p>
+            <p className="text-sm font-semibold text-ink">{t("toast.title")}</p>
             <p className="mt-0.5 text-[13px] leading-snug text-ink/55">
-              A new participant started their AI training journey.
+              {t("toast.body")}
             </p>
             <p className="mt-1.5 text-xs text-ink/40">{timeAgo(latest)}</p>
           </div>
