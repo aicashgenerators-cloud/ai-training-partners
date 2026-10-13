@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Link } from "react-router";
 import { motion } from "framer-motion";
 import { ArrowLeft, BadgeCheck, PartyPopper, Smartphone } from "lucide-react";
@@ -9,6 +10,11 @@ const easeOut = [0.22, 1, 0.36, 1] as const;
 
 export default function Success() {
   const t = useT();
+    useEffect(() => {
+    if (sessionStorage.getItem("lead_tracked")) return;
+    sessionStorage.setItem("lead_tracked", "1");
+    (window as unknown as { fbq?: (...a: unknown[]) => void }).fbq?.("track", "Lead");
+  }, []);
   const nextSteps = [
     { n: "01", body: t("suc.n1") },
     { n: "02", body: t("suc.n2") },
