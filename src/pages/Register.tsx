@@ -5,6 +5,7 @@ import { ArrowLeft, BadgeCheck, Loader2, Lock, ShieldCheck } from "lucide-react"
 import { useMutation } from "@tanstack/react-query";
 import { ApiError, callApi } from "@/lib/api";
 import { useI18n } from "@/lib/i18n";
+import { trackLead } from "@/lib/track";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import type { Key } from "@/content";
 import { Logo } from "@/components/Logo";
@@ -84,7 +85,7 @@ function Field({
 }
 
 export default function Register() {
-  const { t, locale } = useI18n();
+  const { t, locale, lang } = useI18n();
   const navigate = useNavigate();
   const countries = countryOptions(locale);
   const [form, setForm] = useState<FormState>(INITIAL);
@@ -93,7 +94,10 @@ export default function Register() {
 
   const submit = useMutation({
     mutationFn: (values: RegistrationInput) => callApi("submit", values),
-    onSuccess: () => navigate("/success"),
+    onSuccess: () => {
+      trackLead(lang); // Meta Pixel "Lead" event
+      navigate("/success");
+    },
     onError: (e) => {
       const code = e instanceof ApiError ? e.code : undefined;
       setServerError(
