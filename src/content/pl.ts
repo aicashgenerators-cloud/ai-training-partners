@@ -252,6 +252,11 @@ export const pl: Record<Key, string> = {
   "suc.n3": "Opiekun wyjaśnia ustalenia, podział przychodów ({participantPct} / {teamPct}), warunki platformy i wypłaty, abyś mógł podjąć decyzję.",
   "suc.phoneTitle": "Miej telefon pod ręką",
   "suc.phoneBody": "Opiekun może skontaktować się z Tobą wybraną przez Ciebie formą kontaktu.",
+  "suc.wa.title": "Chcesz szybszej odpowiedzi?",
+  "suc.wa.body": "Napisz bezpośrednio do naszego zespołu na WhatsApp, a my zajmiemy się resztą.",
+  "suc.wa.button": "Napisz do nas na WhatsApp",
+  "suc.wa.msg": "Cześć! Właśnie zarejestrowałem się na Waszej stronie i chciałbym porozmawiać z opiekunem.",
+  "suc.wa.number": "13084910329",
   "suc.button": "Wróć na stronę główną",
   "suc.footer": "Twój opiekun jest sprawdzony i zweryfikowany przez nasz zespół.",
 

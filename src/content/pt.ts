@@ -252,6 +252,11 @@ export const pt: Record<Key, string> = {
   "suc.n3": "Seu responsável explica o acordo, a divisão de receita ({participantPct} / {teamPct}), os termos da plataforma e os pagamentos para você decidir.",
   "suc.phoneTitle": "Deixe o celular por perto",
   "suc.phoneBody": "Seu responsável pode entrar em contato pela forma de contato que você escolheu.",
+  "suc.wa.title": "Quer uma resposta mais rápida?",
+  "suc.wa.body": "Envie uma mensagem direto para a nossa equipe no WhatsApp e continuamos a conversa por lá.",
+  "suc.wa.button": "Falar com a gente no WhatsApp",
+  "suc.wa.msg": "Olá! Acabei de me cadastrar no site e gostaria de falar com um responsável.",
+  "suc.wa.number": "13084910329",
   "suc.button": "Voltar ao início",
   "suc.footer": "Seu responsável é avaliado e verificado pela nossa equipe.",
 

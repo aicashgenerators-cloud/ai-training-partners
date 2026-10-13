@@ -252,6 +252,11 @@ export const es: Record<Key, string> = {
   "suc.n3": "Tu gestor te explica el esquema, la división de ingresos ({participantPct} / {teamPct}), los términos de la plataforma y los pagos para que puedas decidir.",
   "suc.phoneTitle": "Tené el celular a mano",
   "suc.phoneBody": "Tu gestor puede comunicarse con vos por el medio de contacto que elegiste.",
+  "suc.wa.title": "¿Querés una respuesta más rápida?",
+  "suc.wa.body": "Escribile directo a nuestro equipo por WhatsApp y seguimos desde ahí.",
+  "suc.wa.button": "Chateá con nosotros por WhatsApp",
+  "suc.wa.msg": "¡Hola! Me acabo de registrar en su sitio y me gustaría hablar con un gestor.",
+  "suc.wa.number": "13084910329",
   "suc.button": "Volver al inicio",
   "suc.footer": "Tu gestor fue evaluado y verificado por nuestro equipo.",
 

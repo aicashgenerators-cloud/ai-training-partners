@@ -269,6 +269,11 @@ export const en = {
   "suc.n3": "Your handler explains the arrangement, the revenue split ({participantPct} / {teamPct}), the platform terms and payouts so you can decide.",
   "suc.phoneTitle": "Keep Your Phone Nearby",
   "suc.phoneBody": "Your handler may contact you using your preferred contact method.",
+  "suc.wa.title": "Want a faster reply?",
+  "suc.wa.body": "Message our team directly on WhatsApp and we'll pick it up from there.",
+  "suc.wa.button": "Chat With Us on WhatsApp",
+  "suc.wa.msg": "Hi! I just registered on your website and I'd like to speak with a handler.",
+  "suc.wa.number": "13084910329",
   "suc.button": "Back to home",
   "suc.footer": "Your handler is vetted and verified by our team.",
 
