@@ -1,6 +1,6 @@
 import { Link } from "react-router";
 import { motion } from "framer-motion";
-import { ArrowLeft, BadgeCheck, PartyPopper, Smartphone } from "lucide-react";
+import { ArrowLeft, BadgeCheck, MessageCircle, PartyPopper, Smartphone } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useT } from "@/lib/i18n";
@@ -9,6 +9,9 @@ const easeOut = [0.22, 1, 0.36, 1] as const;
 
 export default function Success() {
   const t = useT();
+  // digits only, so the number can be typed any way in the admin (e.g. +1 (308) 491-0329)
+  const waNumber = t("suc.wa.number").replace(/\D/g, "");
+  const waLink = `https://wa.me/${waNumber}?text=${encodeURIComponent(t("suc.wa.msg"))}`;
   const nextSteps = [
     { n: "01", body: t("suc.n1") },
     { n: "02", body: t("suc.n2") },
@@ -54,6 +57,29 @@ export default function Success() {
             {t("suc.body")}
           </p>
         </motion.div>
+
+        {waNumber && (
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.7, ease: easeOut }}
+            className="mt-10 rounded-[28px] border border-[#25D366]/30 bg-[#25D366]/10 p-7 text-center sm:p-8"
+          >
+            <p className="text-lg font-semibold text-ink">{t("suc.wa.title")}</p>
+            <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-ink/60">
+              {t("suc.wa.body")}
+            </p>
+            <a
+              href={waLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-5 inline-flex items-center justify-center gap-2.5 rounded-full bg-[#25D366] px-8 py-4 text-[15px] font-semibold text-white shadow-card transition-all hover:-translate-y-0.5 hover:shadow-lift"
+            >
+              <MessageCircle size={19} strokeWidth={2} />
+              {t("suc.wa.button")}
+            </a>
+          </motion.div>
+        )}
 
         <motion.div
           initial={{ opacity: 0, y: 24 }}
