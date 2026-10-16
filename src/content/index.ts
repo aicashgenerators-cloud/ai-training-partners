@@ -32,6 +32,8 @@ export type Settings = {
   popupEnabled: boolean;
   popupSeconds: number;
   showCommunity: boolean;
+  /** digits only, with country code (e.g. 13084910329). Empty = hide the WhatsApp button. */
+  whatsappNumber: string;
 };
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -42,6 +44,7 @@ export const DEFAULT_SETTINGS: Settings = {
   popupEnabled: false,
   popupSeconds: 7,
   showCommunity: false,
+  whatsappNumber: "13084910329",
 };
 
 /** What the admin has changed. Anything missing falls back to the built-in copy. */
@@ -57,6 +60,12 @@ const num = (v: unknown, min: number, max: number, fallback: number) => {
 const bool = (v: unknown, fallback: boolean) =>
   v === true || v === "true" ? true : v === false || v === "false" ? false : fallback;
 
+const phoneDigits = (v: unknown, fallback: string) => {
+  if (typeof v !== "string" && typeof v !== "number") return fallback;
+  const d = String(v).replace(/\D/g, "");
+  return d === "" || (d.length >= 7 && d.length <= 15) ? d : fallback;
+};
+
 export function mergeSettings(o?: Partial<Settings> | null): Settings {
   const d = DEFAULT_SETTINGS;
   return {
@@ -67,12 +76,14 @@ export function mergeSettings(o?: Partial<Settings> | null): Settings {
     popupEnabled: bool(o?.popupEnabled, d.popupEnabled),
     popupSeconds: num(o?.popupSeconds, 3, 30, d.popupSeconds),
     showCommunity: bool(o?.showCommunity, d.showCommunity),
+    whatsappNumber: phoneDigits(o?.whatsappNumber, d.whatsappNumber),
   };
 }
 
 export const GROUP_LABELS: Record<string, string> = {
   meta: "Page title",
   lang: "Language menu",
+  gate: "Welcome popup (first thing visitors see)",
   nav: "Navigation",
   hero: "Hero (top of page)",
   mock: "Hero dashboard illustration",

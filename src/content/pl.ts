@@ -11,6 +11,9 @@ export const pl: Record<Key, string> = {
   "nav.cta": "Zacznij",
   "nav.menu": "Otwórz menu",
 
+  "gate.text": "Kliknij przycisk poniżej, aby dowiedzieć się, jak zacząć szkolić AI już dziś.",
+  "gate.button": "Dowiedz się, jak zacząć",
+
   "hero.eyebrow": "Możliwość dochodu pasywnego",
   "hero.titleLead": "Twoje konto. Twoja szansa.",
   "hero.titleEm": "Nasze wsparcie w szkoleniu AI.",
@@ -256,7 +259,6 @@ export const pl: Record<Key, string> = {
   "suc.wa.body": "Napisz bezpośrednio do naszego zespołu na WhatsApp, a my zajmiemy się resztą.",
   "suc.wa.button": "Napisz do nas na WhatsApp",
   "suc.wa.msg": "Cześć! Właśnie zarejestrowałem się na Waszej stronie i chciałbym porozmawiać z opiekunem.",
-  "suc.wa.number": "13084910329",
   "suc.button": "Wróć na stronę główną",
   "suc.footer": "Twój opiekun jest sprawdzony i zweryfikowany przez nasz zespół.",
 

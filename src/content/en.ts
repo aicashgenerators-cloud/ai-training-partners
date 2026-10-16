@@ -13,6 +13,9 @@ export const en = {
   "nav.cta": "Get Started",
   "nav.menu": "Toggle menu",
 
+  "gate.text": "Click the button below to discover how to begin training AI today.",
+  "gate.button": "Discover How to Begin",
+
   // ── hero ──
   "hero.eyebrow": "Passive-income opportunity",
   "hero.titleLead": "Your Account. Your Opportunity.",
@@ -273,7 +276,6 @@ export const en = {
   "suc.wa.body": "Message our team directly on WhatsApp and we'll pick it up from there.",
   "suc.wa.button": "Chat With Us on WhatsApp",
   "suc.wa.msg": "Hi! I just registered on your website and I'd like to speak with a handler.",
-  "suc.wa.number": "13084910329",
   "suc.button": "Back to home",
   "suc.footer": "Your handler is vetted and verified by our team.",
 

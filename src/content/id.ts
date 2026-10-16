@@ -11,6 +11,9 @@ export const id: Record<Key, string> = {
   "nav.cta": "Mulai",
   "nav.menu": "Buka menu",
 
+  "gate.text": "Klik tombol di bawah untuk mengetahui cara memulai pelatihan AI hari ini.",
+  "gate.button": "Lihat Cara Memulai",
+
   "hero.eyebrow": "Peluang penghasilan pasif",
   "hero.titleLead": "Akun Anda. Peluang Anda.",
   "hero.titleEm": "Dukungan Pelatihan AI dari Kami.",
@@ -256,7 +259,6 @@ export const id: Record<Key, string> = {
   "suc.wa.body": "Kirim pesan langsung ke tim kami lewat WhatsApp dan kami akan melanjutkannya dari sana.",
   "suc.wa.button": "Chat dengan Kami di WhatsApp",
   "suc.wa.msg": "Halo! Saya baru saja mendaftar di situs Anda dan ingin berbicara dengan pendamping.",
-  "suc.wa.number": "13084910329",
   "suc.button": "Kembali ke beranda",
   "suc.footer": "Pendamping Anda diseleksi dan diverifikasi oleh tim kami.",
 
