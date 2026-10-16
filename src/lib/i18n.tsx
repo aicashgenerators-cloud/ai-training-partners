@@ -24,7 +24,22 @@ import {
 const LANG_KEY = "tp_lang";
 const CONTENT_KEY = "tp_content_v1";
 
+/** /register/pt  ->  "pt".  The link the visitor used decides the language. */
+function langFromPath(): LangCode | null {
+  try {
+    const base = import.meta.env.BASE_URL || "/";
+    const path = window.location.pathname;
+    const rest = path.startsWith(base) ? path.slice(base.length) : path.replace(/^\//, "");
+    const seg = rest.split("/")[0].toLowerCase();
+    return isLang(seg) ? seg : null;
+  } catch {
+    return null;
+  }
+}
+
 function detectLang(): LangCode {
+  const fromLink = langFromPath();
+  if (fromLink) return fromLink;
   try {
     const saved = localStorage.getItem(LANG_KEY);
     if (isLang(saved)) return saved;
