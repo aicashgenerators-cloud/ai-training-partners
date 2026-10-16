@@ -12,6 +12,7 @@ import { FAQ } from "@/sections/FAQ";
 import { FinalCTA } from "@/sections/FinalCTA";
 import { Footer } from "@/sections/Footer";
 import { ActivityToast } from "@/components/ActivityToast";
+import { WelcomeGate } from "@/components/WelcomeGate";
 
 export default function Home() {
   return (
@@ -32,6 +33,7 @@ export default function Home() {
       </main>
       <Footer />
       <ActivityToast />
+      <WelcomeGate />
     </div>
   );
 }
